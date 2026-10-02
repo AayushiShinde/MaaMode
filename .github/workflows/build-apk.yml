@@ -20,6 +20,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Accept Android Licenses
+        run: |
+          mkdir -p $ANDROID_HOME/licenses || true
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
