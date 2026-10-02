@@ -1,0 +1,18 @@
+{
+  "name": "MaaMode - आईचा फोन मित्र",
+  "short_name": "MaaMode",
+  "description": "Personal smartphone tutor and communication bridge for Mom, powered by Open-Source AI.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FFFBF5",
+  "theme_color": "#D97706",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

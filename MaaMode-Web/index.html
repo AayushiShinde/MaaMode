@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>MaaMode (माझं Mode) - आईचा फोन मित्र | DEV Hacktoberfest 2026</title>
+  <meta name="description" content="Personal smartphone tutor and communication bridge for Mom, powered by Open-Source AI. Built with love for DEV Hacktoberfest 2026.">
+  <meta name="theme-color" content="#D97706">
+  
+  <!-- Web App Manifest for Mobile PWA -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/jpeg" href="logo.png">
+
+  <!-- Google Fonts: Noto Sans Devanagari & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Main Mobile App Shell -->
+  <main class="app-viewport" id="appViewport">
+    
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="brand-section">
+        <img src="logo.png" alt="MaaMode Logo" class="brand-logo">
+        <div class="brand-title-wrap">
+          <h1>MaaMode</h1>
+          <p>आईचा फोन मित्र ❤️</p>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <div class="lang-selector">
+          <button class="lang-btn active" data-lang="mr" id="btnLangMr">मराठी</button>
+          <button class="lang-btn" data-lang="hi" id="btnLangHi">हिंदी</button>
+          <button class="lang-btn" data-lang="en" id="btnLangEn">Eng</button>
+        </div>
+        
+        <button class="icon-btn" onclick="document.getElementById('qrModal').style.display='flex'" title="मोबाईलवर स्कॅन करा" style="background:#FEF3C7; border-color:#F59E0B;">📲</button>
+        <button class="icon-btn" id="soundToggleBtn" title="आवाज चालू/बंद">🔊</button>
+      </div>
+    </header>
+
+    <!-- Main Content Flow -->
+    <div class="main-content">
+      
+      
+      <!-- PWA 1-Tap Mobile Install Banner -->
+      <div id="pwaInstallBanner" style="display:flex; background:linear-gradient(135deg, #065F46 0%, #047857 100%); color:white; padding:12px 16px; border-radius:16px; align-items:center; justify-content:space-between; box-shadow:0 6px 18px rgba(6,95,70,0.3); border:2px solid #34D399;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:1.8rem;">📱</span>
+          <div>
+            <strong style="font-size:1rem;">मोबाईलवर ॲप इन्स्टॉल करा</strong>
+            <p style="font-size:0.8rem; opacity:0.9;">थेट फोनच्या होम स्क्रीनवर ॲपसारखे वापरा</p>
+          </div>
+        </div>
+        <button onclick="triggerPwaInstall()" style="background:#FFFFFF; color:#065F46; border:none; padding:8px 16px; border-radius:999px; font-weight:800; cursor:pointer; font-size:0.9rem; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+          इन्स्टॉल करा
+        </button>
+      </div>
+
+      <!-- Greeting Banner -->
+      <section class="greeting-banner" aria-label="Greeting">
+        <div class="greeting-text">
+          <h2 id="greetingTitle">नमस्कार आई ❤️</h2>
+          <p id="greetingSubtitle">आज फोनवर काय शिकायचे आहे?</p>
+        </div>
+        <div class="mother-avatar" aria-hidden="true">🧕</div>
+      </section>
+
+      <!-- Giant Voice Hero (Primary Interaction) -->
+      <section class="voice-hero-card">
+        <div class="mic-button-wrap">
+          <div class="pulse-ring"></div>
+          <button class="mic-btn" id="heroMicBtn" aria-label="बोलून सांगा">
+            🎤
+          </button>
+        </div>
+        <h3 class="voice-hint-title" id="voiceHeroTitle">बोलून सांगा</h3>
+        <p class="voice-subtitle" id="voiceHeroSubtitle">उदा. "लोकेशन कशी पाठवायची?" किंवा "पैसे कसे पाठवायचे?"</p>
+        <div class="voice-transcript-bubble" id="voiceTranscript"></div>
+      </section>
+
+      <!-- Giant Tactile Action Grid -->
+      <section class="actions-section">
+        <div class="actions-section-title">
+          <span id="txtActionsHeading">दैनंदिन कामे (Daily Tasks):</span>
+        </div>
+
+        <div class="action-grid" style="margin-top: 12px;">
+          
+          <!-- Card: Uber Booking -->
+          <div class="action-card" id="cardUber" role="button" tabindex="0" style="border-color:#0F172A; background:linear-gradient(180deg, #FFFFFF 0%, #F1F5F9 100%);">
+            <div class="card-icon">🛺</div>
+            <div class="card-title">उबर रिक्षा बुक करा</div>
+            <span class="card-badge">Uber Auto / प्रवास</span>
+          </div>
+          <!-- Card 1: Photo Tutorial -->
+          <div class="action-card card-photo" id="cardPhoto" role="button" tabindex="0">
+            <div class="card-icon">📷</div>
+            <div class="card-title">फोटो पाठवा</div>
+            <span class="card-badge">व्हॉट्सॲप / Photo</span>
+          </div>
+
+          <!-- Card 2: Document / Aadhaar -->
+          <div class="action-card card-message" id="cardDoc" role="button" tabindex="0" style="border-color:#C7D2FE; background:linear-gradient(180deg, #FFFFFF 0%, #EEF2FF 100%);">
+            <div class="card-icon">📄</div>
+            <div class="card-title">डॉक्युमेंट / आधार</div>
+            <span class="card-badge">PDF पाठवणे</span>
+          </div>
+
+          <!-- Card 3: Live Location -->
+          <div class="action-card" id="cardLocation" role="button" tabindex="0" style="border-color:#A7F3D0; background:linear-gradient(180deg, #FFFFFF 0%, #ECFDF5 100%);">
+            <div class="card-icon">📍</div>
+            <div class="card-title">लाईव्ह लोकेशन</div>
+            <span class="card-badge">सुरक्षेसाठी / GPS</span>
+          </div>
+
+          <!-- Card 4: Send Money (UPI) -->
+          <div class="action-card" id="cardMoney" role="button" tabindex="0" style="border-color:#FED7AA; background:linear-gradient(180deg, #FFFFFF 0%, #FFF7ED 100%);">
+            <div class="card-icon">💸</div>
+            <div class="card-title">पैसे पाठवा</div>
+            <span class="card-badge">UPI / सुरक्षित पेमेंट</span>
+          </div>
+
+          <!-- Card 5: WhatsApp Status -->
+          <div class="action-card" id="cardStatus" role="button" tabindex="0" style="border-color:#FBCFE8; background:linear-gradient(180deg, #FFFFFF 0%, #FDF2F8 100%);">
+            <div class="card-icon">🌸</div>
+            <div class="card-title">स्टेटस ठेवा</div>
+            <span class="card-badge">कॅपशनसह स्टेटस</span>
+          </div>
+
+          <!-- Card 6: Message Tutorial -->
+          <div class="action-card card-message" id="cardMessage" role="button" tabindex="0">
+            <div class="card-icon">💬</div>
+            <div class="card-title">मेसेज पाठवा</div>
+            <span class="card-badge">व्हॉट्सॲप चॅट</span>
+          </div>
+
+          <!-- Card 7: Explain Message -->
+          <div class="action-card card-explain" id="cardExplain" role="button" tabindex="0">
+            <div class="card-icon">🔊</div>
+            <div class="card-title">मेसेज समजा</div>
+            <span class="card-badge">इंग्रजीतून मराठी</span>
+          </div>
+
+          <!-- Card 8: Help Me Reply -->
+          <div class="action-card card-reply" id="cardReply" role="button" tabindex="0">
+            <div class="card-icon">✍️</div>
+            <div class="card-title">रिप्लाय करा</div>
+            <span class="card-badge">सोपी उत्तरे</span>
+          </div>
+
+          <!-- Card 9: Phone Call -->
+          <div class="action-card card-call" id="cardCall" role="button" tabindex="0">
+            <div class="card-icon">📞</div>
+            <div class="card-title">बाबांना फोन</div>
+            <span class="card-badge">१-टॅप कॉल</span>
+          </div>
+
+          <!-- Card 10: I'm Stuck -->
+          <div class="action-card card-stuck" id="cardStuck" role="button" tabindex="0">
+            <div class="card-icon">🆘</div>
+            <div class="card-title">अडकलो?</div>
+            <span class="card-badge">मदत हवी आहे</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Mom's Phone Skills Tracker (Independence First) -->
+      <section class="skills-card">
+        <div class="skills-header">
+          <div class="skills-title">
+            <span>🌟 आईची प्रगती (Skills Tracker)</span>
+          </div>
+          <div class="progress-pill" id="skillsProgressPill">५०% पूर्ण</div>
+        </div>
+        <div class="skill-items-list">
+          
+          <div class="skill-row" id="row_skill_uber">
+            <span>🛺 उबरवरून रिक्षा बुक करणे</span>
+            <span class="skill-check">○</span>
+          </div>
+          <div class="skill-row done" id="row_skill_photo">
+            <span>📷 व्हॉट्सॲपवर फोटो पाठवणे</span>
+            <span class="skill-check">✓</span>
+          </div>
+          <div class="skill-row" id="row_skill_document">
+            <span>📄 आधार कार्ड / डॉक्युमेंट पाठवणे</span>
+            <span class="skill-check">○</span>
+          </div>
+          <div class="skill-row" id="row_skill_location">
+            <span>📍 सुरक्षिततेसाठी लाईव्ह लोकेशन पाठवणे</span>
+            <span class="skill-check">○</span>
+          </div>
+          <div class="skill-row" id="row_skill_money">
+            <span>💸 यूपीआयने सुरक्षित पैसे पाठवणे</span>
+            <span class="skill-check">○</span>
+          </div>
+          <div class="skill-row" id="row_skill_status">
+            <span>🌸 व्हॉट्सॲप स्टेटस व कॅपशन ठेवणे</span>
+            <span class="skill-check">○</span>
+          </div>
+          <div class="skill-row" id="row_skill_message">
+            <span>💬 व्हॉट्सॲप मेसेज पाठवणे</span>
+            <span class="skill-check">○</span>
+          </div>
+          <div class="skill-row done" id="row_skill_explain">
+            <span>🔊 इंग्रजी मेसेज समजून घेणे</span>
+            <span class="skill-check">✓</span>
+          </div>
+          <div class="skill-row" id="row_skill_call">
+            <span>📞 बाबांना थेट फोन लावणे</span>
+            <span class="skill-check">○</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Open-Source AI Telemetry & Inspector (Judge / Dev View) -->
+      <section class="ai-inspect-section">
+        <div class="ai-inspect-trigger" id="aiInspectTrigger">
+          <span>🧠 <strong>Open-Source AI Core</strong> (Gemma 2 / Llama 3.2)</span>
+          <span>तपासा ▼</span>
+        </div>
+        <div class="ai-inspect-panel" id="aiInspectPanel">
+          <p><span class="ai-inspect-tag">[MODEL]</span> Gemma 2 2B-IT Quantized (Open-Weights)</p>
+          <p><span class="ai-inspect-tag">[PRIVACY]</span> 100% On-Device / Zero Cloud Telemetry</p>
+          <p><span class="ai-inspect-tag">[INTENT PIPELINE]</span> Natural Marathi &rarr; Strict JSON Schema &rarr; Security Whitelist Validator</p>
+          <div style="margin-top: 10px;">
+            <p style="color:#94A3B8;">Last Structured Intent Log:</p>
+            <pre id="aiInspectCode" style="color: #38BDF8; font-size: 0.75rem;"></pre>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- =====================================================================
+         MODE 1: INTERACTIVE TUTORIAL SANDBOX ("SHOW ME")
+         ===================================================================== -->
+    <div class="tutorial-overlay" id="tutorialOverlay">
+      <!-- Tutorial Top Navigation -->
+      <div class="tutorial-nav">
+        <button class="tut-back-btn" onclick="window.tutorialSandbox.stopTutorial()">
+          ◀ मागे जा (Exit)
+        </button>
+        <span class="tut-step-counter" id="tutStepCounter">पायरी १ / ६</span>
+      </div>
+
+      <!-- Voice Coach Bar -->
+      <div class="coach-voice-bar">
+        <div class="coach-icon">💡</div>
+        <div class="coach-text-wrap">
+          <div class="coach-instruction" id="coachInstructionText">इथे व्हॉट्सॲपवर दाबा.</div>
+          <div class="coach-subtext" id="coachSubtext">पिवळा गोल जिथे चमकतोय तिथे दाबा</div>
+        </div>
+        <button class="audio-repeat-btn" onclick="window.tutorialSandbox.repeatCurrentVoice()" title="पुन्हा ऐका">
+          🔊
+        </button>
+      </div>
+
+      <!-- Smartphone Simulation Frame -->
+      <div class="phone-simulator-frame" id="phoneSimulatorFrame">
+        
+        <!-- Status Bar -->
+        <div class="sim-status-bar">
+          <span>१०:३० AM</span>
+          <span>📶 4G • 🔋 85%</span>
+        </div>
+
+        <!-- 1. Home Screen -->
+        <div class="sim-screen-home" id="simScreenHome">
+          <div class="home-clock-widget">
+            <h3>१०:३०</h3>
+            <p>शुक्रवार, २ ऑक्टोबर</p>
+          </div>
+
+          <div class="home-app-grid">
+            
+            <div class="sim-app-icon-wrap" id="appIconUber">
+              <div class="sim-app-icon uber">Uber</div>
+              <span class="sim-app-label">Uber</span>
+            </div>
+            <div class="sim-app-icon-wrap" id="appIconWhatsapp">
+              <div class="sim-app-icon whatsapp">💬</div>
+              <span class="sim-app-label">WhatsApp</span>
+            </div>
+            <div class="sim-app-icon-wrap">
+              <div class="sim-app-icon phone">📞</div>
+              <span class="sim-app-label">Phone</span>
+            </div>
+            <div class="sim-app-icon-wrap">
+              <div class="sim-app-icon camera">📷</div>
+              <span class="sim-app-label">Camera</span>
+            </div>
+            <div class="sim-app-icon-wrap">
+              <div class="sim-app-icon gallery">🖼️</div>
+              <span class="sim-app-label">Photos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. WhatsApp Chat List Screen with Tabs -->
+        <div class="sim-screen-whatsapp-list" id="simScreenWaList" style="display:none;">
+          <div class="wa-header">
+            <h4>WhatsApp</h4>
+            <span>🔍 ⠇</span>
+          </div>
+
+          <!-- WhatsApp Top Navigation Tabs -->
+          <div class="wa-tabs-bar">
+            <div class="wa-tab-item active" id="waTabChats" onclick="window.tutorialSandbox.showSimulatorScreen('wa_list')">
+              चॅट्स (Chats)
+            </div>
+            <div class="wa-tab-item" id="waTabStatus" onclick="window.tutorialSandbox.showSimulatorScreen('wa_status_tab')">
+              स्टेटस (Status) <span class="wa-status-badge">•</span>
+            </div>
+            <div class="wa-tab-item" id="waTabCalls">
+              कॉल्स (Calls)
+            </div>
+          </div>
+
+          <div class="wa-chats-container">
+            <div class="wa-chat-item" id="chatItemPapa">
+              <div class="wa-avatar">👨‍🦳</div>
+              <div class="wa-chat-meta">
+                <div class="wa-contact-name">बाबा ❤️ (Papa)</div>
+                <div class="wa-last-msg">कालच्या पूजेचा फोटो पाठव जरा...</div>
+              </div>
+              <div class="wa-chat-time">10:15 AM</div>
+            </div>
+
+            <div class="wa-chat-item">
+              <div class="wa-avatar">👦</div>
+              <div class="wa-chat-meta">
+                <div class="wa-contact-name">अजय (Ajay)</div>
+                <div class="wa-last-msg">आई, मी संध्याकाळी वेळेत येईन.</div>
+              </div>
+              <div class="wa-chat-time">काल</div>
+            </div>
+
+            <div class="wa-chat-item">
+              <div class="wa-avatar">👩</div>
+              <div class="wa-chat-meta">
+                <div class="wa-contact-name">सुनीता मावशी</div>
+                <div class="wa-last-msg">नमस्कार, कशी आहेस?</div>
+              </div>
+              <div class="wa-chat-time">काल</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2B. WhatsApp Status Tab Screen -->
+        <div class="sim-screen-status-tab" id="simScreenStatusTab" style="display:none;">
+          <div class="wa-header">
+            <h4>WhatsApp</h4>
+            <span>🔍 ⠇</span>
+          </div>
+          <div class="wa-tabs-bar">
+            <div class="wa-tab-item" onclick="window.tutorialSandbox.showSimulatorScreen('wa_list')">
+              चॅट्स (Chats)
+            </div>
+            <div class="wa-tab-item active">
+              स्टेटस (Status)
+            </div>
+            <div class="wa-tab-item">
+              कॉल्स (Calls)
+            </div>
+          </div>
+
+          <div class="status-my-item" id="myStatusItem">
+            <div class="status-my-avatar-wrap">
+              <div class="status-avatar-circle">🧕</div>
+              <div class="status-add-plus">+</div>
+            </div>
+            <div class="wa-chat-meta">
+              <div class="wa-contact-name">माझे स्टेटस (My Status)</div>
+              <div class="wa-last-msg">नवीन स्टेटस ठेवण्यासाठी येथे दाबा</div>
+            </div>
+          </div>
+
+          <div style="padding: 10px 16px; font-size: 0.85rem; font-weight: 700; color: #6B7280; background: #F3F4F6;">
+            अलीकडील अपडेट्स (Recent updates)
+          </div>
+
+          <div class="wa-chat-item">
+            <div class="wa-avatar" style="border: 3px solid #25D366;">👩</div>
+            <div class="wa-chat-meta">
+              <div class="wa-contact-name">सुनीता मावशी</div>
+              <div class="wa-last-msg">आज सकाळी 8:40 AM</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2C. WhatsApp Status Compose Screen -->
+        <div class="sim-screen-status-compose" id="simScreenStatusCompose" style="display:none;">
+          <div style="padding: 12px; color: white; display: flex; justify-content: space-between;">
+            <span>◀ मागे</span>
+            <span>✏️ 🔤 ✂️</span>
+          </div>
+          <div class="preview-photo-wrap">
+            <img src="sample_photo.jpg" alt="Status Photo">
+          </div>
+          <div class="status-caption-bar">
+            <div class="status-caption-input" id="statusCaptionInputBox">
+              शुभ सकाळ! 🌸
+            </div>
+            <div class="wa-send-circle" id="btnSendStatusFinal">
+              ➤
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. WhatsApp Chat Screen -->
+        <div class="sim-screen-whatsapp-chat" id="simScreenWaChat" style="display:none;">
+          <div class="wa-chat-header">
+            <span style="font-size:1.2rem;">◀</span>
+            <div class="wa-avatar" style="width:36px; height:36px; font-size:1.2rem;">👨‍🦳</div>
+            <div class="wa-chat-header-info">
+              <h5>बाबा ❤️ (Papa)</h5>
+              <p>online</p>
+            </div>
+            <span>📞 📹 ⠇</span>
+          </div>
+
+          <div class="wa-messages-area">
+            <div class="wa-msg-bubble incoming">
+              कालच्या पूजेचा आणि रांगोळीचा फोटो पाठव जरा मला.
+            </div>
+
+            <!-- Sent Photo Result Bubble -->
+            <div class="wa-msg-bubble outgoing" id="waSentPhotoBubble" style="display:none; padding:4px;">
+              <img src="sample_photo.jpg" alt="Sent Photo" style="width:160px; height:120px; object-fit:cover; border-radius:6px;">
+              <div style="text-align:right; font-size:0.75rem; color:#4B5563; margin-top:2px;">10:31 AM <span style="color:#0284C7;">✓✓</span></div>
+            </div>
+
+            <!-- Sent Document Bubble -->
+            <div class="wa-msg-bubble outgoing" id="waSentDocBubble" style="display:none; background:#E0E7FF;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:1.8rem;">📄</span>
+                <div>
+                  <strong>Aadhaar_Card_2026.pdf</strong><br>
+                  <small style="color:#4B5563;">1.2 MB • PDF Document</small>
+                </div>
+              </div>
+              <div style="text-align:right; font-size:0.75rem; color:#4B5563; margin-top:4px;">10:32 AM <span style="color:#0284C7;">✓✓</span></div>
+            </div>
+
+            <!-- Sent Location Bubble -->
+            <div class="wa-msg-bubble outgoing" id="waSentLocBubble" style="display:none; background:#DCFCE7;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:1.8rem;">📍</span>
+                <div>
+                  <strong>लाईव्ह लोकेशन (Live Location)</strong><br>
+                  <small style="color:#166534;">पुढील १ तास सक्रिय (Active 1 hr)</small>
+                </div>
+              </div>
+              <div style="text-align:right; font-size:0.75rem; color:#4B5563; margin-top:4px;">10:33 AM <span style="color:#0284C7;">✓✓</span></div>
+            </div>
+
+            <!-- Sent Payment Bubble -->
+            <div class="wa-msg-bubble outgoing" id="waSentPayBubble" style="display:none; background:#FEF3C7; border:1px solid #F59E0B;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:1.8rem;">💸</span>
+                <div>
+                  <strong>₹२०० पाठवले (UPI Payment)</strong><br>
+                  <small style="color:#92400E;">यशस्वी • Trx ID: UPI982348</small>
+                </div>
+              </div>
+              <div style="text-align:right; font-size:0.75rem; color:#4B5563; margin-top:4px;">10:34 AM <span style="color:#0284C7;">✓✓</span></div>
+            </div>
+          </div>
+
+          <!-- 6-Item WhatsApp Attachment Sheet -->
+          <div class="wa-attachment-sheet-6" id="waAttachmentSheet" style="display:none;">
+            <div class="wa-attach-item" id="btnAttachDocument">
+              <div class="wa-attach-circle document">📄</div>
+              <span class="wa-attach-label">डॉक्युमेंट</span>
+            </div>
+            <div class="wa-attach-item">
+              <div class="wa-attach-circle camera">📷</div>
+              <span class="wa-attach-label">कॅमेरा</span>
+            </div>
+            <div class="wa-attach-item" id="btnAttachGallery">
+              <div class="wa-attach-circle gallery">🖼️</div>
+              <span class="wa-attach-label">गॅलरी</span>
+            </div>
+            <div class="wa-attach-item" id="btnAttachPayment">
+              <div class="wa-attach-circle payment">₹</div>
+              <span class="wa-attach-label">पैसे (Pay)</span>
+            </div>
+            <div class="wa-attach-item" id="btnAttachLocation">
+              <div class="wa-attach-circle location">📍</div>
+              <span class="wa-attach-label">लोकेशन</span>
+            </div>
+            <div class="wa-attach-item">
+              <div class="wa-attach-circle document" style="background:linear-gradient(135deg, #F59E0B 0%, #D97706 100%);">👤</div>
+              <span class="wa-attach-label">कॉन्टॅक्ट</span>
+            </div>
+          </div>
+
+          <!-- Input Dock -->
+          <div class="wa-input-dock">
+            <div class="wa-input-box" id="waInputBoxSample">
+              <span>Type a message...</span>
+              <span class="wa-clip-btn" id="btnAttachmentClip">📎</span>
+            </div>
+            <div class="wa-mic-round" id="btnSendSampleText">🎤</div>
+          </div>
+        </div>
+
+        <!-- 4. Simulated Gallery Screen -->
+        <div class="sim-screen-gallery" id="simScreenGallery" style="display:none;">
+          <div style="padding:12px 16px; background:#1F2937; display:flex; justify-content:space-between;">
+            <span>सर्व फोटो (All Photos)</span>
+            <span>✓</span>
+          </div>
+          <div class="gallery-grid">
+            <div class="gallery-item" id="galleryPhotoItem1">
+              <img src="sample_photo.jpg" alt="Rangoli and Diya Photo">
+            </div>
+            <div class="gallery-item" style="background:#374151; display:flex; align-items:center; justify-content:center; font-size:2rem;">
+              🌺
+            </div>
+            <div class="gallery-item" style="background:#4B5563; display:flex; align-items:center; justify-content:center; font-size:2rem;">
+              🌅
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Simulated Photo Preview & Send Screen -->
+        <div class="sim-screen-photo-preview" id="simScreenPhotoPreview" style="display:none;">
+          <div style="padding:12px; color:white; display:flex; justify-content:space-between;">
+            <span>◀ मागे</span>
+            <span>✏️ ✂️ 🔄</span>
+          </div>
+          <div class="preview-photo-wrap">
+            <img src="sample_photo.jpg" alt="Preview Photo">
+          </div>
+          <div class="preview-footer-dock">
+            <div style="color:white; font-size:0.95rem; opacity:0.8;">कॅपशन जोडा...</div>
+            <div class="wa-send-circle" id="btnSendFinalPhoto">
+              ➤
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Simulated Document Picker Screen -->
+        <div class="sim-screen-document" id="simScreenDocument" style="display:none;">
+          <div style="padding:12px 16px; background:#1E3A8A; color:white; display:flex; justify-content:space-between; align-items:center;">
+            <span>डॉक्युमेंट निवडा (Select File)</span>
+            <span>🔍</span>
+          </div>
+
+          <div class="doc-list-item" id="docItemAadhaar">
+            <div class="doc-icon-wrap">PDF</div>
+            <div class="doc-meta">
+              <h5>Aadhaar_Card_2026.pdf</h5>
+              <p>१.२ MB • १२ सप्टेंबर २०२६ • सुरक्षित आधार प्रत</p>
+            </div>
+          </div>
+
+          <div class="doc-list-item">
+            <div class="doc-icon-wrap" style="background:#E0F2FE; color:#0284C7;">PDF</div>
+            <div class="doc-meta">
+              <h5>Light_Bill_Oct.pdf</h5>
+              <p>३५० KB • २ ऑक्टोबर २०२६</p>
+            </div>
+          </div>
+
+          <div style="padding: 16px; margin-top: auto;">
+            <button class="btn-giant btn-send-confirm" id="btnSendDocumentConfirm">
+              📄 पाठवा (Send Document)
+            </button>
+          </div>
+        </div>
+
+        <!-- 7. Simulated Live Location Screen -->
+        <div class="sim-screen-location" id="simScreenLocation" style="display:none;">
+          <div style="padding:12px 16px; background:#065F46; color:white; display:flex; justify-content:space-between; align-items:center;">
+            <span>लाईव्ह लोकेशन (Send Location)</span>
+            <span>🔄 GPS चालू</span>
+          </div>
+
+          <div class="sim-map-canvas">
+            <div class="sim-map-road-h"></div>
+            <div class="sim-map-road-v"></div>
+            <div class="sim-live-pulse"></div>
+            <div class="sim-map-pin">
+              <span>📍</span>
+            </div>
+          </div>
+
+          <div class="location-bottom-card">
+            <div class="location-option-row active" id="btnShareLiveLocation">
+              <span style="font-size:1.8rem;">🟢</span>
+              <div>
+                <strong style="color:#065F46;">Share Live Location (१ तास)</strong>
+                <p style="font-size:0.8rem; color:#4B5563;">तुम्ही कुठे जात आहात ते बाबांना नकाशावर दिसेल.</p>
+              </div>
+            </div>
+
+            <button class="btn-giant btn-send-confirm" id="btnSendLocationConfirm">
+              📍 लोकेशन पाठवा (Send)
+            </button>
+          </div>
+        </div>
+
+        <!-- 8. Simulated Payment & UPI Screen -->
+        <div class="sim-screen-payment" id="simScreenPayment" style="display:none;">
+          <div>
+            <div style="padding:8px 0; border-bottom:1px solid #E5E7EB; display:flex; justify-content:space-between;">
+              <span style="font-weight:700; color:#1E1B4B;">WhatsApp Pay (UPI)</span>
+              <span>🔒 सुरक्षित</span>
+            </div>
+
+            <div class="payment-user-header">
+              <div class="pay-avatar">👨‍🦳</div>
+              <h4 style="font-size:1.2rem; font-weight:800; color:#111827;">सुरेश शिंदे (बाबा)</h4>
+              <p style="font-size:0.85rem; color:#6B7280;">UPI ID: suresh@sbi • Verified ✓</p>
+            </div>
+
+            <div class="pay-amount-box">
+              <div style="font-size:0.9rem; color:#64748B; font-weight:700;">पाठवायची रक्कम (Amount):</div>
+              <div class="pay-amount-val">₹ २००</div>
+            </div>
+
+            <div class="pay-safety-shield" style="margin-top:14px;">
+              <span style="font-size:1.6rem;">🛡️</span>
+              <div>
+                <strong>आईसाठी सोपा सुरक्षा नियम:</strong><br>
+                पैसे पाठवतानाच PIN टाकावा लागतो. पैसे स्वीकारण्यासाठी किंवा मिळवण्यासाठी कधीही PIN टाकू नये!
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <button class="btn-giant btn-send-confirm" id="btnPayConfirmStep">
+              💸 ₹२०० पाठवा (Send ₹200)
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      
+        <!-- 9. Simulated Uber Home Screen -->
+        <div class="sim-screen-uber-home" id="simScreenUberHome" style="display:none;">
+          <div class="uber-header">
+            <h4 style="font-size:1.4rem; font-weight:900;">Uber</h4>
+            <span>👤</span>
+          </div>
+          <div class="uber-where-box" id="uberWhereToBox">
+            <span style="font-size:1.3rem;">🔍</span>
+            <span style="font-size:1.1rem; font-weight:700; color:#374151;">कुठे जायचे आहे? (Where to?)</span>
+          </div>
+          <div style="padding:0 16px 8px 16px; font-size:0.85rem; font-weight:800; color:#6B7280;">
+            नेहमीची ठिकाणे (Recent):
+          </div>
+          <div class="uber-recent-destination" id="uberDestClinic">
+            <span style="font-size:1.8rem;">🏥</span>
+            <div>
+              <strong style="color:#111827;">डॉ. कुलकर्णी क्लिनिक (Clinic)</strong>
+              <p style="font-size:0.8rem; color:#6B7280;">शिवाजी नगर, मुख्य रस्ता</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10. Simulated Uber Rides List Screen -->
+        <div class="sim-screen-uber-rides" id="simScreenUberRides" style="display:none;">
+          <div class="uber-map-preview">
+            <div style="font-size:2rem; animation:bounce 1.5s infinite;">🛺 ➔ 🏥</div>
+          </div>
+          <div class="uber-rides-list">
+            <div class="uber-ride-card selected" id="uberRideAuto">
+              <div class="uber-ride-info">
+                <span class="uber-ride-icon">🛺</span>
+                <div class="uber-ride-text">
+                  <h5>Uber Auto (रिक्षा)</h5>
+                  <p>२ मिनिटात येईल • ३ जागा</p>
+                </div>
+              </div>
+              <div class="uber-price-tag">₹ ६५</div>
+            </div>
+
+            <div class="uber-ride-card">
+              <div class="uber-ride-info">
+                <span class="uber-ride-icon">🚗</span>
+                <div class="uber-ride-text">
+                  <h5>Uber Go (कार)</h5>
+                  <p>४ मिनिटात येईल • ४ जागा</p>
+                </div>
+              </div>
+              <div class="uber-price-tag">₹ १३०</div>
+            </div>
+          </div>
+          <div style="padding:16px;">
+            <button class="btn-giant" id="btnConfirmUberAuto" style="background:#000000; color:white;">
+              🛺 रिक्षा बुक करा (Confirm - ₹६५)
+            </button>
+          </div>
+        </div>
+
+        <!-- 11. Simulated Uber Confirmed Screen -->
+        <div class="sim-screen-uber-confirmed" id="simScreenUberConfirmed" style="display:none;">
+          <div>
+            <div style="padding:8px 0; border-bottom:1px solid #E5E7EB; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:800; color:#065F46;">✅ रिक्षा येत आहे (Arriving in 2 min)</span>
+              <span style="font-weight:700;">भाडे: ₹६५</span>
+            </div>
+
+            <div class="driver-info-box" style="margin-top:14px;">
+              <div class="driver-avatar">👨‍✈️</div>
+              <div>
+                <h4 style="font-size:1.15rem; font-weight:800; color:#111827;">रमेश कांबळे</h4>
+                <p style="font-size:0.95rem; font-weight:700; color:#059669;">🛺 MH 12 AB 4582</p>
+                <small style="color:#6B7280;">बजाज कॉम्पॅक्ट रिक्षा • ⭐ ४.९</small>
+              </div>
+            </div>
+
+            <div class="otp-highlight-box">
+              <div style="font-size:0.9rem; font-weight:700; color:#92400E;">आईसाठी महत्त्वाचा पिन (OTP):</div>
+              <div class="otp-code">७२९४</div>
+              <p style="font-size:0.85rem; color:#78350F; font-weight:700; margin-top:4px;">
+                रिक्षात बसल्यावरच ड्रायव्हरला हा पिन सांगा.
+              </p>
+            </div>
+          </div>
+
+          <button class="btn-giant btn-send-confirm" id="btnUberDoneStep">
+            पुढे जा (Done)
+          </button>
+        </div>
+      <!-- Mistake Feedback Toast Banner -->
+      <div class="mistake-toast" id="mistakeToast" style="display:none;">
+        <span style="font-size:1.6rem;">💡</span>
+        <span>नाही आई, काळजी करू नका. जिथे पिवळा गोल चमकतोय तिथे दाबा.</span>
+      </div>
+
+      <!-- Celebration Modal -->
+      <div class="celebration-modal" id="celebrationModal" style="display:none;">
+        <div class="celebration-box">
+          <div class="celebration-trophy">🎉</div>
+          <h3 class="celebration-title">शाब्बास आई! ❤️</h3>
+          <p class="celebration-desc">तुम्ही हे काम यशस्वीरीत्या शिकलात!</p>
+          <button class="btn-giant btn-send-confirm" onclick="window.tutorialSandbox.closeCelebration()">
+            पुढे जा (Done)
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- =====================================================================
+         MODE 2: EXPLAIN THIS (ENGLISH TO MARATHI SIMPLIFIER)
+         ===================================================================== -->
+    <div class="explain-modal" id="explainModal">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3>🔊 मेसेज समजा (Explain)</h3>
+        </div>
+        <button class="close-modal-btn" onclick="window.appController.closeExplainModal()">✕</button>
+      </div>
+
+      <div class="explain-content-wrap">
+        <div>
+          <p style="font-size:0.9rem; font-weight:700; color:var(--text-muted); margin-bottom:8px;">
+            नमुना मेसेज निवडा (Select Message):
+          </p>
+          <div class="sample-messages-tray">
+            <button class="sample-msg-chip" onclick="window.appController.loadExplainData('doctor_appointment')">🏥 डॉक्टर</button>
+            <button class="sample-msg-chip" onclick="window.appController.loadExplainData('courier_delivery')">📦 पार्सल</button>
+            <button class="sample-msg-chip" onclick="window.appController.loadExplainData('electricity_bill')">💡 लाईट बिल</button>
+            <button class="sample-msg-chip" onclick="window.appController.loadExplainData('bank_warning')">🏦 बँक अलर्ट</button>
+          </div>
+        </div>
+
+        <div class="incoming-box">
+          <div class="incoming-box-label" id="explainSender">Dr. Kulkarni Clinic</div>
+          <div class="incoming-text-content" id="explainIncoming">
+            "Doctor's appointment is confirmed for tomorrow at 11:30 AM. Please bring your blood test reports."
+          </div>
+        </div>
+
+        <div class="explain-result-card">
+          <div class="explain-section">
+            <div class="explain-sec-title">📌 काय आहे? (What is this?)</div>
+            <div class="explain-sec-body" id="explainWhat">
+              उद्या सकाळी ११:३० वाजता डॉक्टरांकडे जायचे नक्की झाले आहे.
+            </div>
+          </div>
+
+          <div class="explain-section">
+            <div class="explain-sec-title">📝 तुम्हाला काय करायचे आहे? (Action)</div>
+            <div class="explain-sec-body" id="explainAction">
+              जाताना रक्ताच्या तपासणीचे जुने रिपोर्ट्स सोबत घेऊन जायचे आहेत.
+            </div>
+          </div>
+
+          <div class="explain-section">
+            <div class="explain-sec-title">🛡️ काळजीचे कारण आहे का? (Status)</div>
+            <div class="explain-sec-body" style="font-size:1.1rem; color:#059669;" id="explainUrgency">
+              काळजीचे कारण नाही. हे नेहमीचे स्मरणपत्र आहे.
+            </div>
+          </div>
+
+          <button class="btn-giant btn-send-confirm" id="btnListenExplain" style="margin-top:10px;">
+            🔊 मोठ्याने ऐका (Listen Aloud)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         MODE 3: HELP ME REPLY (SAFE THREE-OPTION REPLIES)
+         ===================================================================== -->
+    <div class="reply-modal" id="replyModal">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3>✍️ उत्तर द्या (Help Me Reply)</h3>
+        </div>
+        <button class="close-modal-btn" onclick="window.appController.closeReplyModal()">✕</button>
+      </div>
+
+      <div class="explain-content-wrap">
+        <div class="incoming-box">
+          <div class="incoming-box-label" id="replySenderName">बाबा ❤️ (Papa)</div>
+          <div class="incoming-text-content" id="replyIncomingText">
+            "कालच्या पूजेचा आणि रांगोळीचा फोटो पाठव जरा मला."
+          </div>
+        </div>
+
+        <p style="font-size:1.05rem; font-weight:800; color:var(--text-primary); margin-top:10px;">
+          तुम्हाला काय उत्तर द्यायचे आहे? एक निवडा:
+        </p>
+
+        <div class="reply-options-list" id="replyChoicesContainer">
+          <!-- Dynamically populated choices -->
+        </div>
+      </div>
+    </div>
+
+    <!-- GIANT SAFETY CONFIRMATION SHEET -->
+    <div class="safety-confirm-overlay" id="safetyConfirmOverlay">
+      <div class="safety-sheet">
+        <div style="font-size:2.5rem;">🔒</div>
+        <h3 class="safety-title">हा मेसेज पाठवायचा का?</h3>
+        
+        <div class="safety-preview-box" id="safetyPreviewText">
+          "हो, मी आता लगेच पाठवते."
+        </div>
+
+        <div class="safety-action-btns">
+          <button class="btn-giant btn-send-confirm" id="btnConfirmSend">
+            ✅ हो, पाठवा (SEND)
+          </button>
+          <button class="btn-giant btn-cancel-confirm" id="btnConfirmCancel">
+            ❌ नको, रद्द करा (CANCEL)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- "I'M STUCK" REASSURANCE MODAL -->
+    <div class="stuck-modal" id="stuckModal">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3>🆘 काळजी करू नका आई</h3>
+        </div>
+        <button class="close-modal-btn" onclick="window.appController.closeStuckModal()">✕</button>
+      </div>
+      <div class="explain-content-wrap" style="text-align:center;">
+        <div style="font-size:4rem; margin:10px 0;">🌸</div>
+        <h3 style="font-size:1.6rem; color:#1E1B4B; font-weight:800;">घाबरू नका, सर्व ठीक आहे!</h3>
+        <p style="font-size:1.15rem; color:#4B5563; margin-top:8px;">
+          फोनमध्ये काहीही बिघडत नाही. जर अडकला असाल तर थेट अजयला फोन लावा:
+        </p>
+        <button class="btn-giant btn-send-confirm" style="margin-top:24px;" onclick="alert('📞 अजयला थेट कॉल लावत आहे...'); window.appController.closeStuckModal();">
+          📞 अजयला फोन लावा (Call Ajay)
+        </button>
+        <button class="btn-giant btn-cancel-confirm" style="margin-top:12px;" onclick="window.appController.closeStuckModal()">
+          मागे जा (Back to Home)
+        </button>
+      </div>
+    </div>
+
+  
+    <!-- QR Code Sheet for Instant Mobile Access -->
+    <div id="qrModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.85); z-index:300; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(6px);">
+      <div style="background:white; border-radius:24px; padding:24px; max-width:380px; width:100%; text-align:center; border:4px solid #D97706; box-shadow:0 20px 50px rgba(0,0,0,0.4);">
+        <div style="font-size:2.5rem;">📲</div>
+        <h3 style="font-size:1.4rem; font-weight:800; color:#1E1B4B; margin-top:6px;">मोबाईलवर ॲप उघडा</h3>
+        <p style="font-size:0.9rem; color:#4B5563; margin-top:4px;">
+          आईच्या किंवा कोणत्याही मोबाईलच्या कॅमेऱ्याने खालील QR कोड स्कॅन करा:
+        </p>
+
+        <div style="margin:16px auto; padding:12px; background:#F8FAFC; border-radius:16px; display:inline-block; border:2px dashed #CBD5E1;">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=http://10.212.56.1:3000" alt="MaaMode Mobile QR Code" style="width:200px; height:200px; display:block;">
+        </div>
+
+        <div style="background:#FEF3C7; border:1px solid #F59E0B; border-radius:12px; padding:10px; font-size:0.85rem; color:#92400E; font-weight:700;">
+          वाय-फाय लिंक: <span style="font-family:monospace; user-select:all;">http://10.212.56.1:3000</span>
+        </div>
+
+        <button onclick="document.getElementById('qrModal').style.display='none'" style="margin-top:16px; width:100%; height:48px; border-radius:999px; background:#1E1B4B; color:white; font-size:1rem; font-weight:700; border:none; cursor:pointer;">
+          बंद करा (Close)
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Scripts -->
+  <script src="voice-engine.js"></script>
+  <script src="ai-engine.js"></script>
+  <script src="tutorial-sandbox.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# Render Blueprint for MaaMode
+# Best Use of Render ($200 Track) - DEV Hacktoberfest 2026
+services:
+  - type: web
+    name: maamode
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ELEVENLABS_API_KEY
+        sync: false
