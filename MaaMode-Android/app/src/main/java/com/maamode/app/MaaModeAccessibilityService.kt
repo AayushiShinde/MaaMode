@@ -1,4 +1,4 @@
-package com.maamode.app
+﻿package com.maamode.app
 
 import android.accessibilityservice.AccessibilityService
 import android.content.Intent
@@ -8,21 +8,29 @@ import android.view.accessibility.AccessibilityNodeInfo
 
 class MaaModeAccessibilityService : AccessibilityService() {
 
+    private var lastHighlightedDescription = ""
+    private var lastEventTime = 0L
+
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         val rootNode = rootInActiveWindow ?: return
         val packageName = event?.packageName?.toString() ?: ""
 
-        when (packageName) {
-            "com.whatsapp" -> handleWhatsAppGuidance(rootNode)
-            "com.ubercab" -> handleUberGuidance(rootNode)
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastEventTime < 300) return // Throttle
+        lastEventTime = currentTime
+
+        when {
+            packageName.contains("whatsapp", ignoreCase = true) -> handleWhatsAppGuidance(rootNode)
+            packageName.contains("uber", ignoreCase = true) -> handleUberGuidance(rootNode)
         }
     }
 
     private fun handleWhatsAppGuidance(rootNode: AccessibilityNodeInfo) {
-        // Step 1: Look for contact "बाबा" on chat list
+        // Step 1: Look for contact 'बाबा' on chat list
         val papaContact = findNodeByText(rootNode, "बाबा")
-        if (papaContact != null) {
-            highlightNode(papaContact, "आता बाबांच्या नावावर दाबा आई.")
+            ?: findNodeByText(rootNode, "Papa")
+        if (papaContact != null && isNodeVisible(papaContact)) {
+            highlightNode(papaContact, "बाबांच्या नावावर दाबा आई.", "papa_chat")
             return
         }
 
@@ -30,61 +38,65 @@ class MaaModeAccessibilityService : AccessibilityService() {
         val attachBtn = findNodeByContentDescription(rootNode, "Attach")
             ?: findNodeByViewId(rootNode, "com.whatsapp:id/input_attach_button")
         if (attachBtn != null && isNodeVisible(attachBtn)) {
-            highlightNode(attachBtn, "आता खाली पिनच्या चिन्हावर दाबा.")
+            highlightNode(attachBtn, "आता खाली पिनच्या चिन्हावर दाबा.", "attach_clip")
             return
         }
 
         // Step 3: Inside attachment sheet, look for Gallery
         val galleryBtn = findNodeByText(rootNode, "Gallery")
             ?: findNodeByText(rootNode, "गॅलरी")
-        if (galleryBtn != null) {
-            highlightNode(galleryBtn, "गॅलरीवर दाबा आणि फोटो निवडा.")
+            ?: findNodeByContentDescription(rootNode, "Gallery")
+        if (galleryBtn != null && isNodeVisible(galleryBtn)) {
+            highlightNode(galleryBtn, "गॅलरीवर दाबा आणि फोटो निवडा.", "gallery_button")
             return
         }
 
         // Step 4: Look for green Send button
         val sendBtn = findNodeByViewId(rootNode, "com.whatsapp:id/send")
             ?: findNodeByContentDescription(rootNode, "Send")
-        if (sendBtn != null) {
-            highlightNode(sendBtn, "हिरव्या बटनावर दाबून पाठवून द्या!")
+        if (sendBtn != null && isNodeVisible(sendBtn)) {
+            highlightNode(sendBtn, "हिरव्या बटनावर दाबून पाठवून द्या!", "send_button")
             return
         }
     }
 
     private fun handleUberGuidance(rootNode: AccessibilityNodeInfo) {
-        // Step 1: Look for "Where to?" box
+        // Step 1: Look for 'Where to?' box
         val whereToBox = findNodeByText(rootNode, "Where to?")
             ?: findNodeByText(rootNode, "कुठे जायचे आहे?")
-        if (whereToBox != null) {
-            highlightNode(whereToBox, "कुठे जायचे आहे तिथे दाबा.")
+        if (whereToBox != null && isNodeVisible(whereToBox)) {
+            highlightNode(whereToBox, "कुठे जायचे आहे तिथे दाबा.", "uber_where_to")
             return
         }
 
         // Step 2: Look for Uber Auto option
         val autoOption = findNodeByText(rootNode, "Uber Auto")
             ?: findNodeByText(rootNode, "Auto")
-        if (autoOption != null) {
-            highlightNode(autoOption, "इथे रिक्षा (Uber Auto) निवडा.")
+        if (autoOption != null && isNodeVisible(autoOption)) {
+            highlightNode(autoOption, "इथे रिक्षा (Uber Auto) निवडा.", "uber_auto")
             return
         }
 
         // Step 3: Look for Confirm button
         val confirmBtn = findNodeByText(rootNode, "Confirm Auto")
             ?: findNodeByText(rootNode, "Confirm")
-        if (confirmBtn != null) {
-            highlightNode(confirmBtn, "खाली काळ्या बटनावर दाबून रिक्षा पक्की करा.")
+        if (confirmBtn != null && isNodeVisible(confirmBtn)) {
+            highlightNode(confirmBtn, "खाली काळ्या बटनावर दाबून रिक्षा पक्की करा.", "uber_confirm")
             return
         }
     }
 
-    private fun highlightNode(node: AccessibilityNodeInfo, instruction: String) {
+    private fun highlightNode(node: AccessibilityNodeInfo, instruction: String, key: String) {
         val rect = Rect()
         node.getBoundsInScreen(rect)
         if (rect.width() > 0 && rect.height() > 0) {
+            val shouldSpeak = (lastHighlightedDescription != key)
+            lastHighlightedDescription = key
+
             val intent = Intent(this, MaaModeOverlayService::class.java).apply {
                 action = MaaModeOverlayService.ACTION_SHOW_SPOTLIGHT
                 putExtra(MaaModeOverlayService.EXTRA_BOUNDS, rect)
-                putExtra(MaaModeOverlayService.EXTRA_INSTRUCTION, instruction)
+                putExtra(MaaModeOverlayService.EXTRA_INSTRUCTION, if (shouldSpeak) instruction else "")
             }
             startService(intent)
         }
@@ -98,16 +110,16 @@ class MaaModeAccessibilityService : AccessibilityService() {
 
     private fun findNodeByText(node: AccessibilityNodeInfo, text: String): AccessibilityNodeInfo? {
         val list = node.findAccessibilityNodeInfosByText(text)
-        return list.firstOrNull()
+        return list.firstOrNull { isNodeVisible(it) }
     }
 
     private fun findNodeByViewId(node: AccessibilityNodeInfo, viewId: String): AccessibilityNodeInfo? {
         val list = node.findAccessibilityNodeInfosByViewId(viewId)
-        return list.firstOrNull()
+        return list.firstOrNull { isNodeVisible(it) }
     }
 
     private fun findNodeByContentDescription(node: AccessibilityNodeInfo, desc: String): AccessibilityNodeInfo? {
-        if (node.contentDescription?.toString()?.contains(desc, ignoreCase = true) == true) {
+        if (node.contentDescription?.toString()?.contains(desc, ignoreCase = true) == true && isNodeVisible(node)) {
             return node
         }
         for (i in 0 until node.childCount) {

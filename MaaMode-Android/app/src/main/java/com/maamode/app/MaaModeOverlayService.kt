@@ -1,4 +1,4 @@
-package com.maamode.app
+﻿package com.maamode.app
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -13,10 +13,8 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.IBinder
 import android.view.Gravity
-import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.app.NotificationCompat
 
@@ -45,7 +43,12 @@ class MaaModeOverlayService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_SHOW_SPOTLIGHT -> {
-                val bounds = intent.getParcelableExtra<Rect>(EXTRA_BOUNDS)
+                val bounds: Rect? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    intent.getParcelableExtra(EXTRA_BOUNDS, Rect::class.java)
+                } else {
+                    @Suppress("DEPRECATION")
+                    intent.getParcelableExtra(EXTRA_BOUNDS)
+                }
                 val instruction = intent.getStringExtra(EXTRA_INSTRUCTION) ?: "इथे दाबा आई"
                 if (bounds != null) {
                     showSpotlightOverRect(bounds, instruction)
@@ -112,7 +115,8 @@ class MaaModeOverlayService : Service() {
     private fun showSpotlightOverRect(bounds: Rect, instruction: String) {
         hideSpotlight()
 
-        // Create glowing animated spotlight view precisely matching target's screen coordinates
+        // Critical: FLAG_NOT_TOUCHABLE allows Mom's finger touch to pass directly
+        // through the glowing circle and click the real WhatsApp / Uber button underneath!
         val params = WindowManager.LayoutParams(
             bounds.width() + 40,
             bounds.height() + 40,
@@ -120,19 +124,18 @@ class MaaModeOverlayService : Service() {
             bounds.top - 20,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                    WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
         }
 
         spotlightView = FrameLayout(this).apply {
-            // Gold glowing pulsating border
             background = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 cornerRadius = 24f
-                setColor(Color.parseColor("#15F59E0B")) // Subtle tint
+                setColor(Color.parseColor("#1BF59E0B")) // Subtle warm glow
                 setStroke(8, Color.parseColor("#F59E0B")) // Bright gold ring
             }
         }

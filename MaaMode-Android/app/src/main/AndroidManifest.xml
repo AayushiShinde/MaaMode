@@ -1,15 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Permissions for Drawing Over Real Apps & Screen Inspection -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-    <!-- Queries to inspect WhatsApp and Uber -->
     <queries>
         <package android:name="com.whatsapp" />
         <package android:name="com.ubercab" />
@@ -17,13 +13,12 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/app_logo"
         android:label="MaaMode"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/app_logo"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
 
-        <!-- Main Home & Setup Activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -34,14 +29,11 @@
             </intent-filter>
         </activity>
 
-        <!-- Floating Overlay Service (Draws Spotlight Over WhatsApp / Uber) -->
         <service
             android:name=".MaaModeOverlayService"
             android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="specialUse" />
+            android:exported="false" />
 
-        <!-- Accessibility Service (Detects Real Buttons in WhatsApp / Uber) -->
         <service
             android:name=".MaaModeAccessibilityService"
             android:enabled="true"
