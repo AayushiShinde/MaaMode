@@ -1,5 +1,5 @@
-# Render Blueprint for MaaMode
-# Best Use of Render ($200 Track) - DEV Hacktoberfest 2026
+﻿# Render Blueprint for MaaMode
+# Best Use of Render ( Track) - DEV Hacktoberfest 2026
 services:
   - type: web
     name: maamode
