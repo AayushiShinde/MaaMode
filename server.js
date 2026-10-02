@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const path = require('path');
 
 const app = express();
@@ -21,7 +21,8 @@ app.post('/api/tts', async (req, res) => {
 
   try {
     const targetVoice = voiceId || '21m00Tcm4TlvDq8ikWAM';
-    const response = await fetch(https://api.elevenlabs.io/v1/text-to-speech/, {
+    const url = 'https://api.elevenlabs.io/v1/text-to-speech/' + encodeURIComponent(targetVoice);
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -61,5 +62,5 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(MaaMode server running on port );
+  console.log('MaaMode server running on port ' + PORT);
 });
